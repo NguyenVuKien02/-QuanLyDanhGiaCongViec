@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly Phong Ban";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-building me-2 text-primary"></i>Quan Ly Phong Ban
+    </h5>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThem">
+        <i class="fas fa-plus me-1"></i> Them Phong Ban
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bang danh sach -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Ten Phong Ban</th>
+                    <th>Mo Ta</th>
+                    <th>So Nhan Vien</th>
+                    <th>Ngay Tao</th>
+                    <th class="text-center">Thao Tac</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.DsPhongBan != null)
+                {
+                    int stt = 1;
+                    foreach (var pb in ViewBag.DsPhongBan)
+                    {
+                        <tr>
+                            <td>@stt</td>
+                            <td class="fw-semibold">@pb.TenPhongBan</td>
+                            <td class="text-muted">@(pb.MoTa ?? "—")</td>
+                            <td>
+                                <span class="badge bg-primary">@pb.SoNhanVien nguoi</span>
+                            </td>
+                            <td class="text-muted small">
+                                @pb.NgayTao.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-warning"
+                                        onclick="suaPhongBan(@pb.MaPhongBan, '@pb.TenPhongBan', '@pb.MoTa')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="post" action="/PhongBan/Xoa" class="d-inline"
+                                      onsubmit="return confirm('Ban co chac muon xoa?')">
+                                    <input type="hidden" name="id" value="@pb.MaPhongBan" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Them -->
+<div class="modal fade" id="modalThem" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Them Phong Ban Moi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/PhongBan/Them">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ten Phong Ban <span class="text-danger">*</span></label>
+                        <input type="text" name="tenPhongBan" class="form-control"
+                               placeholder="VD: Phong Kinh Doanh" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mo Ta</label>
+                        <textarea name="moTa" class="form-control" rows="3"
+                                  placeholder="Mo ta chuc nang phong ban..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Luu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sua -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Chinh Sua Phong Ban
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/PhongBan/CapNhat">
+                <div class="modal-body">
+                    <input type="hidden" name="maPhongBan" id="suaMaPhongBan" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ten Phong Ban <span class="text-danger">*</span></label>
+                        <input type="text" name="tenPhongBan" id="suaTenPhongBan"
+                               class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mo Ta</label>
+                        <textarea name="moTa" id="suaMoTa" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cap Nhat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function suaPhongBan(ma, ten, moTa) {
+            document.getElementById('suaMaPhongBan').value = ma;
+            document.getElementById('suaTenPhongBan').value = ten;
+            document.getElementById('suaMoTa').value = moTa || '';
+            new bootstrap.Modal(document.getElementById('modalSua')).show();
+        }
+    </script>
+}

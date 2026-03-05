@@ -1,0 +1,347 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly Nhan Vien";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-users me-2 text-primary"></i>Quan Ly Nhan Vien
+    </h5>
+    @if (User.IsInRole("Admin"))
+    {
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThem">
+            <i class="fas fa-plus me-1"></i> Them Nhan Vien
+        </button>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bo loc -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Tim Kiem</label>
+                <input type="text" name="tuKhoa" class="form-control"
+                       placeholder="Ho ten, email..." value="@ViewBag.TuKhoa" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Phong Ban</label>
+                <select name="maPhongBan" class="form-select">
+                    <option value="">-- Tat ca phong ban --</option>
+                    @foreach (var pb in ViewBag.DsPhongBan)
+                    {
+                        if (ViewBag.MaPhongBanFilter != null && ViewBag.MaPhongBanFilter == pb.MaPhongBan)
+                        {
+                            <option value="@pb.MaPhongBan" selected>@pb.TenPhongBan</option>
+                        }
+                        else
+                        {
+                            <option value="@pb.MaPhongBan">@pb.TenPhongBan</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Loc
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="/NguoiDung/Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>Xoa Loc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bang nhan vien -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Ho Ten</th>
+                    <th>Email</th>
+                    <th>Phong Ban</th>
+                    <th>Chuc Vu</th>
+                    <th>Vai Tro</th>
+                    <th>Trang Thai</th>
+                    <th class="text-center">Thao Tac</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.DsNguoiDung != null)
+                {
+                    int stt = 1;
+                    foreach (var nd in ViewBag.DsNguoiDung)
+                    {
+                        <tr>
+                            <td class="ps-3">@stt</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center
+                                                justify-content-center fw-bold"
+                                         style="width:36px;height:36px;font-size:14px">
+                                        @nd.HoTen.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">@nd.HoTen</div>
+                                        <div class="text-muted small">@(nd.SoDienThoai ?? "—")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted small">@nd.Email</td>
+                            <td>@(nd.PhongBan?.TenPhongBan ?? "—")</td>
+                            <td>@(nd.ChucVu?.TenChucVu ?? "—")</td>
+                            <td>
+                                @{
+                                    var badgeColor = nd.VaiTro?.TenVaiTro switch {
+                                        "Admin"    => "danger",
+                                        "Manager"  => "warning",
+                                        "Employee" => "secondary",
+                                        _          => "secondary"
+                                    };
+                                }
+                                <span class="badge bg-@badgeColor">
+                                    @(nd.VaiTro?.TenVaiTro ?? "—")
+                                </span>
+                            </td>
+                            <td>
+                                @if (nd.TrangThai)
+                                {
+                                    <span class="badge bg-success">Hoat Dong</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Da Khoa</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="suaNhanVien(@nd.MaNguoiDung)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form method="post" action="/NguoiDung/DoiTrangThai"
+                                          class="d-inline">
+                                        <input type="hidden" name="id" value="@nd.MaNguoiDung" />
+                                        <button type="submit"
+                                                class="btn btn-sm @(nd.TrangThai ? "btn-outline-danger" : "btn-outline-success")"
+                                                title="@(nd.TrangThai ? "Khoa tai khoan" : "Mo khoa")">
+                                            <i class="fas @(nd.TrangThai ? "fa-lock" : "fa-lock-open")"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="/NguoiDung/DatLaiMatKhau"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Dat lai mat khau ve 123456?')">
+                                        <input type="hidden" name="id" value="@nd.MaNguoiDung" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                title="Dat lai mat khau">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Them Nhan Vien -->
+<div class="modal fade" id="modalThem" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Them Nhan Vien Moi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/NguoiDung/Them">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ho Ten <span class="text-danger">*</span></label>
+                            <input type="text" name="hoTen" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mat Khau <span class="text-danger">*</span></label>
+                            <input type="password" name="matKhau" class="form-control"
+                                   placeholder="Mac dinh: 123456" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">So Dien Thoai</label>
+                            <input type="text" name="soDienThoai" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phong Ban</label>
+                            <select name="maPhongBan" class="form-select">
+                                <option value="">-- Chon phong ban --</option>
+                                @foreach (var pb in ViewBag.DsPhongBan)
+                                {
+                                    <option value="@pb.MaPhongBan">@pb.TenPhongBan</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Chuc Vu</label>
+                            <select name="maChucVu" class="form-select">
+                                <option value="">-- Chon chuc vu --</option>
+                                @foreach (var cv in ViewBag.DsChucVu)
+                                {
+                                    <option value="@cv.MaChucVu">@cv.TenChucVu</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vai Tro</label>
+                            <select name="maVaiTro" class="form-select">
+                                <option value="">-- Chon vai tro --</option>
+                                @foreach (var vt in ViewBag.DsVaiTro)
+                                {
+                                    <option value="@vt.MaVaiTro">@vt.TenVaiTro</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Quan Ly Truc Tiep</label>
+                            <select name="maQuanLy" class="form-select">
+                                <option value="">-- Chon quan ly --</option>
+                                @foreach (var ql in ViewBag.DsQuanLy)
+                                {
+                                    <option value="@ql.MaNguoiDung">@ql.HoTen</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Luu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sua Nhan Vien -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chinh Sua Nhan Vien</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/NguoiDung/CapNhat">
+                <div class="modal-body">
+                    <input type="hidden" name="maNguoiDung" id="suaMaNguoiDung" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ho Ten</label>
+                            <input type="text" name="hoTen" id="suaHoTen" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" id="suaEmail" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">So Dien Thoai</label>
+                            <input type="text" name="soDienThoai" id="suaSdt" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phong Ban</label>
+                            <select name="maPhongBan" id="suaPhongBan" class="form-select">
+                                <option value="">-- Chon phong ban --</option>
+                                @foreach (var pb in ViewBag.DsPhongBan)
+                                {
+                                    <option value="@pb.MaPhongBan">@pb.TenPhongBan</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Chuc Vu</label>
+                            <select name="maChucVu" id="suaChucVu" class="form-select">
+                                <option value="">-- Chon chuc vu --</option>
+                                @foreach (var cv in ViewBag.DsChucVu)
+                                {
+                                    <option value="@cv.MaChucVu">@cv.TenChucVu</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vai Tro</label>
+                            <select name="maVaiTro" id="suaVaiTro" class="form-select">
+                                <option value="">-- Chon vai tro --</option>
+                                @foreach (var vt in ViewBag.DsVaiTro)
+                                {
+                                    <option value="@vt.MaVaiTro">@vt.TenVaiTro</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Quan Ly Truc Tiep</label>
+                            <select name="maQuanLy" id="suaQuanLy" class="form-select">
+                                <option value="">-- Chon quan ly --</option>
+                                @foreach (var ql in ViewBag.DsQuanLy)
+                                {
+                                    <option value="@ql.MaNguoiDung">@ql.HoTen</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cap Nhat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function suaNhanVien(id) {
+        fetch('/NguoiDung/GetById?id=' + id)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('suaMaNguoiDung').value = data.maNguoiDung;
+                document.getElementById('suaHoTen').value       = data.hoTen;
+                document.getElementById('suaEmail').value       = data.email;
+                document.getElementById('suaSdt').value         = data.soDienThoai || '';
+                document.getElementById('suaPhongBan').value    = data.maPhongBan || '';
+                document.getElementById('suaChucVu').value      = data.maChucVu || '';
+                document.getElementById('suaVaiTro').value      = data.maVaiTro || '';
+                document.getElementById('suaQuanLy').value      = data.maQuanLy || '';
+                new bootstrap.Modal(document.getElementById('modalSua')).show();
+            });
+    }
+</script>
+}

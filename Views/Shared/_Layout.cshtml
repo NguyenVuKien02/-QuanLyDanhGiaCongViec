@@ -1,49 +1,198 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - QuanLyDanhGiaCongViec</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/QuanLyDanhGiaCongViec.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Quan Ly Cong Viec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1e3c72, #2a5298);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+            .sidebar-brand i {
+                font-size: 24px;
+                margin-right: 10px;
+            }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+            .sidebar .nav-link:hover,
+            .sidebar .nav-link.active {
+                color: white;
+                background: rgba(255,255,255,0.15);
+                border-left: 3px solid white;
+            }
+
+        .sidebar .nav-section {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            text-transform: uppercase;
+            padding: 15px 20px 5px;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            padding: 12px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .content-area {
+            padding: 24px;
+        }
+
+        .badge-role {
+            font-size: 11px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">QuanLyDanhGiaCongViec</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var vaiTro = User.FindFirst(ClaimTypes.Role)?.Value;
+        var hoTen = User.Identity.Name;
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-chart-line"></i>QL Cong Viec
+            </div>
+
+            <nav class="mt-2">
+                <div class="nav-section">Tong Quan</div>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")"
+                   href="/Dashboard/Index">
+                    <i class="fas fa-home fa-fw"></i> Dashboard
+                </a>
+
+                <div class="nav-section">Cong Viec</div>
+                <a class="nav-link" href="/CongViec/Index">
+                    <i class="fas fa-tasks fa-fw"></i> Cong Viec
+                </a>
+
+                <div class="nav-section">Hieu Suat</div>
+                <a class="nav-link" href="/KPI/Index">
+                    <i class="fas fa-chart-bar fa-fw"></i> KPI
+                </a>
+                <a class="nav-link" href="/OKR/Index">
+                    <i class="fas fa-bullseye fa-fw"></i> OKR
+                </a>
+                <a class="nav-link" href="/DanhGia/Index">
+                    <i class="fas fa-star fa-fw"></i> Danh Gia
+                </a>
+
+                @if (vaiTro == "Admin" || vaiTro == "Manager")
+                {
+                    <div class="nav-section">Quan Ly</div>
+                    <a class="nav-link" href="/NguoiDung/Index">
+                        <i class="fas fa-users fa-fw"></i> Nhan Vien
+                    </a>
+                    <a class="nav-link" href="/BaoCao/Index">
+                        <i class="fas fa-file-chart-bar fa-fw"></i> Bao Cao
+                    </a>
+                }
+
+                @if (vaiTro == "Admin")
+                {
+                    <div class="nav-section">He Thong</div>
+                    <a class="nav-link" href="/PhongBan/Index">
+                        <i class="fas fa-building fa-fw"></i> Phong Ban
+                    </a>
+                    <a class="nav-link" href="/KyDanhGia/Index">
+                        <i class="fas fa-calendar fa-fw"></i> Ky Danh Gia
+                    </a>
+                }
+            </nav>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div>
+                    <span class="fw-semibold">@ViewData["Title"]</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/ThongBao/Index" class="btn btn-sm btn-light position-relative">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2"
+                                data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i>
+                            <span>@hoTen</span>
+                            <span class="badge bg-primary badge-role">@vaiTro</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/Account/DoiMatKhau">
+                                    <i class="fas fa-key me-2"></i>Doi Mat Khau
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/Account/Logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Dang Xuat
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - QuanLyDanhGiaCongViec - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <!-- PAGE CONTENT -->
+            <div class="content-area">
+                @RenderBody()
+            </div>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    }
+    else
+    {
+        @RenderBody()
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
