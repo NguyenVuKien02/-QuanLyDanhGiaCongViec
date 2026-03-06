@@ -148,13 +148,13 @@
                                             <i class="fas @(nd.TrangThai ? "fa-lock" : "fa-lock-open")"></i>
                                         </button>
                                     </form>
-                                    <form method="post" action="/NguoiDung/DatLaiMatKhau"
+                                    <form method="post" action="/NguoiDung/Xoa"
                                           class="d-inline"
-                                          onsubmit="return confirm('Dat lai mat khau ve 123456?')">
+                                          onsubmit="return confirm('Ban co chac muon xoa nhan vien nay?')">
                                         <input type="hidden" name="id" value="@nd.MaNguoiDung" />
-                                        <button type="submit" class="btn btn-sm btn-outline-warning"
-                                                title="Dat lai mat khau">
-                                            <i class="fas fa-key"></i>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="Xoa nhan vien">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
                                 }

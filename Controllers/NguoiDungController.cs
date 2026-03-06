@@ -148,10 +148,10 @@ namespace QuanLyDanhGiaCongViec.Controllers
             return RedirectToAction("Index");
         }
 
-        // Dat lai mat khau ve "123456"
+        // Xoa nhan vien
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult DatLaiMatKhau(int id)
+        public IActionResult Xoa(int id)
         {
             var nd = _context.NguoiDungs.Find(id);
             if (nd == null)
@@ -160,10 +160,18 @@ namespace QuanLyDanhGiaCongViec.Controllers
                 return RedirectToAction("Index");
             }
 
-            nd.MatKhauHash = HashMD5("123456");
+            // Kiem tra con cong viec lien quan khong
+            bool coCongViec = _context.CongViecs.Any(c => c.NguoiThucHien == id || c.NguoiGiao == id);
+            if (coCongViec)
+            {
+                TempData["Error"] = "Khong the xoa! Nhan vien nay con cong viec lien quan.";
+                return RedirectToAction("Index");
+            }
+
+            _context.NguoiDungs.Remove(nd);
             _context.SaveChanges();
 
-            TempData["Success"] = "Da dat lai mat khau ve 123456!";
+            TempData["Success"] = "Da xoa nhan vien thanh cong!";
             return RedirectToAction("Index");
         }
 

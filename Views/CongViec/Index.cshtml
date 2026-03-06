@@ -1,0 +1,367 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly Cong Viec";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-tasks me-2 text-primary"></i>Quan Ly Cong Viec
+    </h5>
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThem">
+            <i class="fas fa-plus me-1"></i>Giao Cong Viec
+        </button>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Thong ke nhanh -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-4 fw-bold text-secondary">@ViewBag.ChuaBatDau</div>
+            <div class="small text-muted">Chua Bat Dau</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-4 fw-bold text-primary">@ViewBag.DangLam</div>
+            <div class="small text-muted">Dang Lam</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-4 fw-bold text-success">@ViewBag.HoanThanh</div>
+            <div class="small text-muted">Hoan Thanh</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-4 fw-bold text-danger">@ViewBag.HuyBo</div>
+            <div class="small text-muted">Huy Bo</div>
+        </div>
+    </div>
+</div>
+
+<!-- Bo loc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Tim Kiem</label>
+                <input type="text" name="tuKhoa" class="form-control"
+                       placeholder="Ten cong viec..." value="@ViewBag.TuKhoa" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Trang Thai</label>
+                <select name="maKy" class="form-select">
+                    <option value="">-- Tat ca ky --</option>
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        if (ViewBag.MaKyFilter != null && ViewBag.MaKyFilter == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Ky Danh Gia</label>
+                <select name="maKy" class="form-select">
+                    <option value="">-- Tat ca ky --</option>
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        @if (ViewBag.MaKyFilter != null && ViewBag.MaKyFilter == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="col-md-1">
+                <a href="/CongViec/Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Kanban Board -->
+<div class="row g-3">
+    @{
+        var dsCv = ViewBag.DsCongViec as List<QuanLyDanhGiaCongViec.Models.CongViec>;
+        var chuaBatDau = dsCv?.Where(c => c.TrangThai == "ChuaBatDau").ToList();
+        var dangLam    = dsCv?.Where(c => c.TrangThai == "DangLam").ToList();
+        var hoanThanh  = dsCv?.Where(c => c.TrangThai == "HoanThanh").ToList();
+        var huyBo      = dsCv?.Where(c => c.TrangThai == "HuyBo").ToList();
+    }
+
+    <!-- Cot Chua Bat Dau -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-secondary text-white fw-semibold">
+                <i class="fas fa-circle me-2"></i>Chua Bat Dau
+                <span class="badge bg-white text-secondary float-end">@chuaBatDau?.Count</span>
+            </div>
+            <div class="card-body p-2" style="min-height:400px">
+                @foreach (var cv in chuaBatDau ?? new())
+                {
+                    @await Html.PartialAsync("_CongViecCard", cv)
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cot Dang Lam -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white fw-semibold">
+                <i class="fas fa-spinner me-2"></i>Dang Lam
+                <span class="badge bg-white text-primary float-end">@dangLam?.Count</span>
+            </div>
+            <div class="card-body p-2" style="min-height:400px">
+                @foreach (var cv in dangLam ?? new())
+                {
+                    @await Html.PartialAsync("_CongViecCard", cv)
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cot Hoan Thanh -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white fw-semibold">
+                <i class="fas fa-check-circle me-2"></i>Hoan Thanh
+                <span class="badge bg-white text-success float-end">@hoanThanh?.Count</span>
+            </div>
+            <div class="card-body p-2" style="min-height:400px">
+                @foreach (var cv in hoanThanh ?? new())
+                {
+                    @await Html.PartialAsync("_CongViecCard", cv)
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cot Huy Bo -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-danger text-white fw-semibold">
+                <i class="fas fa-times-circle me-2"></i>Huy Bo
+                <span class="badge bg-white text-danger float-end">@huyBo?.Count</span>
+            </div>
+            <div class="card-body p-2" style="min-height:400px">
+                @foreach (var cv in huyBo ?? new())
+                {
+                    @await Html.PartialAsync("_CongViecCard", cv)
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Them Cong Viec -->
+<div class="modal fade" id="modalThem" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Giao Cong Viec Moi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/CongViec/Them">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ten Cong Viec <span class="text-danger">*</span></label>
+                            <input type="text" name="tenCongViec" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mo Ta</label>
+                            <textarea name="moTa" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Giao Cho <span class="text-danger">*</span></label>
+                            <select name="nguoiThucHien" class="form-select" required>
+                                <option value="">-- Chon nhan vien --</option>
+                                @foreach (var nd in ViewBag.DsNguoiDung)
+                                {
+                                    <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ky Danh Gia</label>
+                            <select name="maKy" class="form-select">
+                                <option value="">-- Chon ky --</option>
+                                @foreach (var ky in ViewBag.DsKy)
+                                {
+                                    <option value="@ky.MaKy">@ky.TenKy</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Uu Tien</label>
+                            <select name="uuTien" class="form-select">
+                                <option value="Thap">Thap</option>
+                                <option value="TrungBinh" selected>Trung Binh</option>
+                                <option value="Cao">Cao</option>
+                                <option value="KhanCap">Khan Cap</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Ngay Bat Dau</label>
+                            <input type="date" name="ngayBatDau" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Han Hoan Thanh</label>
+                            <input type="date" name="hanHoanThanh" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ghi Chu</label>
+                            <textarea name="ghiChu" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Giao Viec
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sua Cong Viec -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Cap Nhat Cong Viec</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/CongViec/CapNhat">
+                <div class="modal-body">
+                    <input type="hidden" name="maCongViec" id="suaMaCv" />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ten Cong Viec</label>
+                            <input type="text" name="tenCongViec" id="suaTenCv" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mo Ta</label>
+                            <textarea name="moTa" id="suaMoTaCv" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nguoi Thuc Hien</label>
+                            <select name="nguoiThucHien" id="suaNguoiTH" class="form-select">
+                                <option value="">-- Chon nhan vien --</option>
+                                @foreach (var nd in ViewBag.DsNguoiDung)
+                                {
+                                    <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Trang Thai</label>
+                            <select name="trangThai" id="suaTrangThai" class="form-select">
+                                <option value="ChuaBatDau">Chua Bat Dau</option>
+                                <option value="DangLam">Dang Lam</option>
+                                <option value="HoanThanh">Hoan Thanh</option>
+                                <option value="HuyBo">Huy Bo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Uu Tien</label>
+                            <select name="uuTien" id="suaUuTien" class="form-select">
+                                <option value="Thap">Thap</option>
+                                <option value="TrungBinh">Trung Binh</option>
+                                <option value="Cao">Cao</option>
+                                <option value="KhanCap">Khan Cap</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Ngay Bat Dau</label>
+                            <input type="date" name="ngayBatDau" id="suaNgayBD" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Han Hoan Thanh</label>
+                            <input type="date" name="hanHoanThanh" id="suaHanHT" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ghi Chu</label>
+                            <textarea name="ghiChu" id="suaGhiChu" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cap Nhat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function suaCongViec(id) {
+        fetch('/CongViec/GetById?id=' + id)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('suaMaCv').value       = data.maCongViec;
+                document.getElementById('suaTenCv').value      = data.tenCongViec;
+                document.getElementById('suaMoTaCv').value     = data.moTa || '';
+                document.getElementById('suaNguoiTH').value    = data.nguoiThucHien || '';
+                document.getElementById('suaTrangThai').value  = data.trangThai;
+                document.getElementById('suaUuTien').value     = data.uuTien;
+                document.getElementById('suaNgayBD').value     = data.ngayBatDau || '';
+                document.getElementById('suaHanHT').value      = data.hanHoanThanh || '';
+                document.getElementById('suaGhiChu').value     = data.ghiChu || '';
+                new bootstrap.Modal(document.getElementById('modalSua')).show();
+            });
+    }
+
+    function capNhatTienDo(id, tienDo) {
+        fetch('/CongViec/CapNhatTienDo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id=${id}&tienDo=${tienDo}`
+        }).then(r => r.json()).then(data => {
+            if (data.success) location.reload();
+        });
+    }
+</script>
+}

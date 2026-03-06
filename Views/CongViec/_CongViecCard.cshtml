@@ -1,0 +1,87 @@
+﻿@model QuanLyDanhGiaCongViec.Models.CongViec
+
+@{
+    var mauUuTien = Model.UuTien switch
+    {
+        "KhanCap" => "danger",
+        "Cao" => "warning",
+        "TrungBinh" => "primary",
+        _ => "secondary"
+    };
+
+    bool quaHan = Model.HanHoanThanh.HasValue
+               && Model.HanHoanThanh.Value < DateOnly.FromDateTime(DateTime.Now)
+               && Model.TrangThai != "HoanThanh";
+}
+
+<div class="card border-0 shadow-sm mb-2">
+    <div class="card-body p-3">
+
+        <!-- Tieu de + uu tien -->
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="fw-semibold small" style="max-width:160px">@Model.TenCongViec</div>
+            <span class="badge bg-@mauUuTien" style="font-size:10px">@Model.UuTien</span>
+        </div>
+
+        <!-- Nguoi thuc hien -->
+        <div class="text-muted small mb-2">
+            <i class="fas fa-user me-1"></i>
+            @(Model.NguoiDungThucHien?.HoTen ?? "Chua phan cong")
+        </div>
+
+        <!-- Han hoan thanh -->
+        @if (Model.HanHoanThanh.HasValue)
+        {
+            <div class="small mb-2 @(quaHan ? "text-danger fw-semibold" : "text-muted")">
+                <i class="fas fa-calendar me-1"></i>
+                Han: @Model.HanHoanThanh.Value.ToString("dd/MM/yyyy")
+                @if (quaHan)
+                {
+                    <span>(Qua han!)</span>
+                }
+            </div>
+        }
+
+        <!-- Thanh tien do -->
+        <div class="mb-2">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Tien do</span>
+                <span>@Model.TienDo%</span>
+            </div>
+            <div class="progress" style="height:6px">
+                <div class="progress-bar bg-@(Model.TienDo == 100 ? "success" : "primary")"
+                     style="width:@Model.TienDo%"></div>
+            </div>
+        </div>
+
+        <!-- Cập nhật nhanh tien do -->
+        <div class="d-flex gap-1 mb-2">
+            @foreach (var pct in new[] { 25, 50, 75, 100 })
+            {
+                <button class="btn btn-outline-secondary flex-fill"
+                        style="font-size:10px;padding:2px"
+                        onclick="capNhatTienDo(@Model.MaCongViec, @pct)">
+                    @pct%
+                </button>
+            }
+        </div>
+
+        <!-- Nut hanh dong -->
+        <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-primary flex-fill"
+                    onclick="suaCongViec(@Model.MaCongViec)">
+                <i class="fas fa-edit"></i>
+            </button>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <form method="post" action="/CongViec/Xoa" class="flex-fill"
+                      onsubmit="return confirm('Xoa cong viec nay?')">
+                    <input type="hidden" name="id" value="@Model.MaCongViec" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

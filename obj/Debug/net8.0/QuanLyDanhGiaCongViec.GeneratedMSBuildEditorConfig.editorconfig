@@ -26,6 +26,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/CongViec/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29uZ1ZpZWNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/CongViec/_CongViecCard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29uZ1ZpZWNcX0NvbmdWaWVjQ2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/Dashboard/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
