@@ -156,6 +156,28 @@
                 <div class="d-flex align-items-center gap-3">
                     <a href="/ThongBao/Index" class="btn btn-sm btn-light position-relative">
                         <i class="fas fa-bell"></i>
+                        @{
+                            int soTB = 0;
+                            if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var claimId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                                if (claimId != null)
+                                {
+                                    int maNDLayout = int.Parse(claimId.Value);
+                                    var dbContext = Context.RequestServices
+                                    .GetRequiredService<QuanLyDanhGiaCongViec.Data.AppDbContext>();
+                                    soTB = dbContext.ThongBaos
+                                    .Count(t => t.MaNguoiDung == maNDLayout && t.DaDoc == false);
+                                }
+                            }
+                        }
+                        @if (soTB > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle
+                     badge rounded-pill bg-danger" style="font-size:10px">
+                                @soTB
+                            </span>
+                        }
                     </a>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2"

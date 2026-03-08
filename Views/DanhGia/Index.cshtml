@@ -1,0 +1,241 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly Danh Gia";
+    var dsPhieu = ViewBag.DsPhieu as List<QuanLyDanhGiaCongViec.Models.PhieuDanhGia>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-star me-2 text-primary"></i>Quan Ly Danh Gia
+    </h5>
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTao">
+            <i class="fas fa-plus me-1"></i>Tao Phieu Danh Gia
+        </button>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bo loc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Ky Danh Gia</label>
+                <select name="maKy" class="form-select">
+                    <option value="">-- Tat ca ky --</option>
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        if (ViewBag.MaKyFilter != null && ViewBag.MaKyFilter == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Nhan Vien</label>
+                    <select name="maNguoiDung" class="form-select">
+                        <option value="">-- Tat ca --</option>
+                        @foreach (var nd in ViewBag.DsNguoiDung)
+                        {
+                            if (ViewBag.MaNDFilter != null &&
+                            ViewBag.MaNDFilter == nd.MaNguoiDung)
+                            {
+                                <option value="@nd.MaNguoiDung" selected>@nd.HoTen</option>
+                            }
+                            else
+                            {
+                                <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Loc
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="/DanhGia/Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>Xoa Loc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bang danh sach phieu -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Nhan Vien</th>
+                    <th>Nguoi Danh Gia</th>
+                    <th>Ky</th>
+                    <th>Diem KPI</th>
+                    <th>Diem OKR</th>
+                    <th>Diem NL</th>
+                    <th>Tong Hop</th>
+                    <th>Xep Loai</th>
+                    <th>Trang Thai</th>
+                    <th class="text-center">Thao Tac</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (dsPhieu != null && dsPhieu.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var p in dsPhieu)
+                    {
+                        string mauTT = p.TrangThai switch
+                        {
+                            "DaDuyet" => "success",
+                            "DaGui" => "warning",
+                            "NhapLieu" => "secondary",
+                            _ => "secondary"
+                        };
+                        string mauXL = p.XepLoai switch
+                        {
+                            "XuatSac" => "success",
+                            "Tot" => "primary",
+                            "TrungBinh" => "warning",
+                            "Yeu" => "danger",
+                            _ => "secondary"
+                        };
+                        <tr>
+                            <td class="ps-3">@stt</td>
+                            <td class="fw-semibold">
+                                @p.NguoiDuocDanhGia?.HoTen
+                            </td>
+                            <td class="text-muted small">
+                                @p.NguoiDanhGia?.HoTen
+                            </td>
+                            <td class="small">@p.KyDanhGia?.TenKy</td>
+                            <td>@p.DiemKPI%</td>
+                            <td>@p.DiemOKR%</td>
+                            <td>@p.DiemNangLuc/10</td>
+                            <td class="fw-bold">@p.DiemTongHop%</td>
+                            <td>
+                                @if (p.XepLoai != null)
+                                {
+                                    <span class="badge bg-@mauXL">@p.XepLoai</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-@mauTT">@p.TrangThai</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="/DanhGia/ChiTiet/@p.MaPhieu"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form method="post" action="/DanhGia/Xoa"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Xoa phieu nay?')">
+                                        <input type="hidden" name="id" value="@p.MaPhieu" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="11" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            Chua co phieu danh gia nao
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tao Phieu -->
+<div class="modal fade" id="modalTao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Tao Phieu Danh Gia
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/DanhGia/TaoPhieu">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Nhan Vien <span class="text-danger">*</span>
+                        </label>
+                        <select name="maNguoiDuocDG" class="form-select" required>
+                            <option value="">-- Chon nhan vien --</option>
+                            @foreach (var nd in ViewBag.DsNguoiDung)
+                            {
+                                <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Ky Danh Gia <span class="text-danger">*</span>
+                        </label>
+                        <select name="maKy" class="form-select" required>
+                            <option value="">-- Chon ky --</option>
+                            @foreach (var ky in ViewBag.DsKy)
+                            {
+                                <option value="@ky.MaKy">@ky.TenKy</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Huy
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Tao Phieu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

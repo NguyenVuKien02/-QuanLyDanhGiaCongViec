@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Chi Tiet OKR";
+    var mt = ViewBag.MucTieu as QuanLyDanhGiaCongViec.Models.MucTieuOKR;
+    var mauTienDo = mt?.TienDo >= 100 ? "success"
+                  : mt?.TienDo >= 60 ? "primary"
+                  : mt?.TienDo >= 30 ? "warning" : "danger";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-bullseye me-2 text-primary"></i>Chi Tiet Muc Tieu OKR
+    </h5>
+    <a href="/OKR/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Quay Lai
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Thong tin muc tieu -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="fw-bold mb-1">@mt?.TieuDe</h5>
+                <p class="text-muted mb-2">@(mt?.MoTa ?? "Khong co mo ta")</p>
+                <div class="small text-muted">
+                    <i class="fas fa-user me-1"></i>@mt?.NguoiSoHuu?.HoTen
+                    &nbsp;|&nbsp;
+                    <i class="fas fa-calendar me-1"></i>@(mt?.KyDanhGia?.TenKy ?? "—")
+                    &nbsp;|&nbsp;
+                    <span class="badge bg-primary">@mt?.TrangThai</span>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="fs-1 fw-bold text-@mauTienDo">@mt?.TienDo%</div>
+                <div class="progress mt-2" style="height:12px;border-radius:6px">
+                    <div class="progress-bar bg-@mauTienDo"
+                         style="width:@mt?.TienDo%;border-radius:6px"></div>
+                </div>
+                <div class="small text-muted mt-1">Tien Do Tong The</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Results -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0">
+        <i class="fas fa-key me-2 text-warning"></i>
+        Key Results (@mt?.KetQuaThenChots.Count)
+    </h6>
+    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalThemKR">
+        <i class="fas fa-plus me-1"></i>Them Key Result
+    </button>
+</div>
+
+@if (mt?.KetQuaThenChots.Count > 0)
+{
+    foreach (var kr in mt.KetQuaThenChots)
+    {
+        double tiLe = kr.GiaTriMucTieu > 0
+            ? Math.Min(Math.Round((kr.GiaTriHienTai / kr.GiaTriMucTieu) * 100, 1), 100)
+            : 0;
+
+        string mauKR = tiLe >= 100 ? "success"
+                     : tiLe >= 60 ? "primary"
+                     : tiLe >= 30 ? "warning" : "danger";
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <div class="fw-semibold">@kr.TieuDe</div>
+                        @if (kr.HanHoanThanh.HasValue)
+                        {
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Han: @kr.HanHoanThanh.Value.ToString("dd/MM/yyyy")
+                            </div>
+                        }
+                        <span class="badge bg-@(kr.TrangThai == "HoanThanh" ? "success" : "secondary") mt-1">
+                            @kr.TrangThai
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>@kr.GiaTriHienTai / @kr.GiaTriMucTieu @kr.DonVi</span>
+                            <span class="fw-bold text-@mauKR">@tiLe%</span>
+                        </div>
+                        <div class="progress" style="height:8px">
+                            <div class="progress-bar bg-@mauKR"
+                                 style="width:@tiLe%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <input type="number" id="kr_@kr.MaKetQua"
+                                   class="form-control" step="0.1" min="0"
+                                   value="@kr.GiaTriHienTai"
+                                   max="@kr.GiaTriMucTieu" />
+                            <button class="btn btn-primary"
+                                    onclick="capNhatKR(@kr.MaKetQua)">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <form method="post" action="/OKR/XoaKeyResult" class="d-inline">
+                                <input type="hidden" name="id" value="@kr.MaKetQua" />
+                                <input type="hidden" name="maMucTieu" value="@mt.MaMucTieu" />
+                                <button type="submit" class="btn btn-danger"
+                                        onclick="return confirm('Xoa Key Result nay?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="text-center py-4 text-muted">
+        <i class="fas fa-key fa-2x mb-2 d-block"></i>
+        Chua co Key Result nao. Them ngay!
+    </div>
+}
+
+<!-- Modal Them Key Result -->
+<div class="modal fade" id="modalThemKR" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Them Key Result
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/OKR/ThemKeyResult">
+                <input type="hidden" name="maMucTieu" value="@mt?.MaMucTieu" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tieu De <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="tieuDe" class="form-control"
+                               placeholder="VD: So khach hang moi dat 50" required />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Gia Tri Muc Tieu</label>
+                            <input type="number" name="giaTriMucTieu" class="form-control"
+                                   step="0.1" min="0" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Don Vi</label>
+                            <input type="text" name="donVi" class="form-control"
+                                   placeholder="khach, trieu, %" />
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label fw-semibold">Han Hoan Thanh</label>
+                        <input type="date" name="hanHoanThanh" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Them
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatKR(maKetQua) {
+            const giaTri = document.getElementById('kr_' + maKetQua).value;
+            fetch('/OKR/CapNhatKeyResult', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `maKetQua=${maKetQua}&giaTriHienTai=${giaTri}`
+            }).then(r => r.json()).then(data => {
+                if (data.success) location.reload();
+            });
+        }
+    </script>
+}

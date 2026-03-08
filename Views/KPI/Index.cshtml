@@ -1,0 +1,328 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly KPI";
+    var dsKPI = ViewBag.DsKPINguoiDung as
+        List<QuanLyDanhGiaCongViec.Models.KPINguoiDung>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-chart-bar me-2 text-primary"></i>Quan Ly KPI
+    </h5>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/KPI/QuanLyChiTieu" class="btn btn-outline-primary">
+                <i class="fas fa-cog me-1"></i>Quan Ly Chi Tieu
+            </a>
+        }
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+        {
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalGiao">
+                <i class="fas fa-plus me-1"></i>Giao KPI
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bo loc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Ky Danh Gia</label>
+                <select name="maKy" class="form-select">
+                    <option value="">-- Tat ca ky --</option>
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        if (ViewBag.MaKyFilter != null && ViewBag.MaKyFilter == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Nhan Vien</label>
+                    <select name="maNguoiDung" class="form-select">
+                        <option value="">-- Tat ca nhan vien --</option>
+                        @foreach (var nd in ViewBag.DsNguoiDung)
+                        {
+                            if (ViewBag.MaNguoiDungFilter != null &&
+                            ViewBag.MaNguoiDungFilter == nd.MaNguoiDung)
+                            {
+                                <option value="@nd.MaNguoiDung" selected>@nd.HoTen</option>
+                            }
+                            else
+                            {
+                                <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Loc
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="/KPI/Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>Xoa Loc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Danh sach KPI -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Chi Tieu KPI</th>
+                    <th>Nhan Vien</th>
+                    <th>Ky</th>
+                    <th>Muc Tieu</th>
+                    <th>Thuc Te</th>
+                    <th style="width:200px">Tien Do</th>
+                    <th>Xep Loai</th>
+                    <th class="text-center">Thao Tac</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (dsKPI != null && dsKPI.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var kpi in dsKPI)
+                    {
+                        double tiLe = kpi.GiaTriMucTieu > 0
+                        ? Math.Round((kpi.GiaTriThucTe / kpi.GiaTriMucTieu) * 100, 1)
+                        : 0;
+
+                        string mauTienDo = tiLe >= 100 ? "success"
+                        : tiLe >= 70 ? "primary"
+                        : tiLe >= 50 ? "warning"
+                        : "danger";
+
+                        string xepLoai = tiLe >= 100 ? "Xuat Sac"
+                        : tiLe >= 80 ? "Tot"
+                        : tiLe >= 60 ? "Trung Binh"
+                        : "Can Co Gang";
+
+                        string mauXepLoai = tiLe >= 100 ? "success"
+                        : tiLe >= 80 ? "primary"
+                        : tiLe >= 60 ? "warning"
+                        : "danger";
+                        <tr>
+                            <td class="ps-3">@stt</td>
+                            <td>
+                                <div class="fw-semibold">
+                                    @kpi.ChiTieuKPI?.TenKPI
+                                </div>
+                                <div class="text-muted small">
+                                    @kpi.ChiTieuKPI?.DanhMucKPI?.TenDanhMuc
+                                    &nbsp;|&nbsp;
+                                    Don vi: @(kpi.ChiTieuKPI?.DonVi ?? "—")
+                                </div>
+                            </td>
+                            <td>@kpi.NguoiDung?.HoTen</td>
+                            <td class="small text-muted">@kpi.KyDanhGia?.TenKy</td>
+                            <td class="fw-semibold">
+                                @kpi.GiaTriMucTieu @kpi.ChiTieuKPI?.DonVi
+                            </td>
+                            <td class="fw-semibold text-primary">
+                                @kpi.GiaTriThucTe @kpi.ChiTieuKPI?.DonVi
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height:8px">
+                                        <div class="progress-bar bg-@mauTienDo"
+                                             style="width:@(Math.Min(tiLe,100))%"></div>
+                                    </div>
+                                    <span class="small fw-bold text-@mauTienDo"
+                                          style="width:40px">@tiLe%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-@mauXepLoai">@xepLoai</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-success"
+                                        onclick="capNhatKetQua(@kpi.MaKPINguoiDung, @kpi.GiaTriThucTe, '@kpi.GhiChu')"
+                                        title="Cap nhat ket qua">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                {
+                                    <form method="post" action="/KPI/Xoa" class="d-inline"
+                                          onsubmit="return confirm('Xoa KPI nay?')">
+                                        <input type="hidden" name="id" value="@kpi.MaKPINguoiDung" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            Chua co du lieu KPI
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Giao KPI -->
+<div class="modal fade" id="modalGiao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Giao KPI Cho Nhan Vien
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/KPI/GiaoKPI">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nhan Vien <span class="text-danger">*</span></label>
+                        <select name="maNguoiDung" class="form-select" required>
+                            <option value="">-- Chon nhan vien --</option>
+                            @foreach (var nd in ViewBag.DsNguoiDung)
+                            {
+                                <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chi Tieu KPI <span class="text-danger">*</span></label>
+                        <select name="maKPI" class="form-select" required>
+                            <option value="">-- Chon chi tieu --</option>
+                            @foreach (var ct in ViewBag.DsChiTieuKPI)
+                            {
+                                <option value="@ct.MaKPI">
+                                    [@ct.DanhMucKPI?.TenDanhMuc] @ct.TenKPI (@ct.DonVi)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ky Danh Gia <span class="text-danger">*</span></label>
+                        <select name="maKy" class="form-select" required>
+                            <option value="">-- Chon ky --</option>
+                            @foreach (var ky in ViewBag.DsKy)
+                            {
+                                <option value="@ky.MaKy">@ky.TenKy</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Muc Tieu Cu The <span class="text-danger">*</span></label>
+                        <input type="number" name="giaTriMucTieu" class="form-control"
+                               step="0.1" min="0" required
+                               placeholder="Nhap gia tri muc tieu cu the..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ghi Chu</label>
+                        <textarea name="ghiChu" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Giao KPI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cap Nhat Ket Qua -->
+<div class="modal fade" id="modalCapNhat" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Cap Nhat Ket Qua Thuc Te
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/KPI/CapNhatKetQua">
+                <div class="modal-body">
+                    <input type="hidden" name="maKPINguoiDung" id="capNhatMaKPI" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chi Tieu</label>
+                        <input type="text" id="capNhatTenKPI" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Ket Qua Thuc Te <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" name="giaTriThucTe" id="capNhatGiaTri"
+                               class="form-control" step="0.1" min="0" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ghi Chu</label>
+                        <textarea name="ghiChu" id="capNhatGhiChu"
+                                  class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Luu Ket Qua
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatKetQua(maKPI, giaTriThucTe, ghiChu) {
+            fetch('/KPI/GetKPIById?id=' + maKPI)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('capNhatMaKPI').value    = data.maKPINguoiDung;
+                    document.getElementById('capNhatTenKPI').value   = data.tenKPI;
+                    document.getElementById('capNhatGiaTri').value   = data.giaTriThucTe;
+                    document.getElementById('capNhatGhiChu').value   = data.ghiChu || '';
+                    new bootstrap.Modal(document.getElementById('modalCapNhat')).show();
+                });
+        }
+    </script>
+}

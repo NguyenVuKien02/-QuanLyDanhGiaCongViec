@@ -34,6 +34,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29uZ1ZpZWNcX0NvbmdWaWVjQ2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/DanhGia/ChiTiet.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFuaEdpYVxDaGlUaWV0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/DanhGia/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFuaEdpYVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/Dashboard/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -46,8 +54,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/KPI/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS1BJXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/KPI/QuanLyChiTieu.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS1BJXFF1YW5MeUNoaVRpZXUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/NguoiDung/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTmd1b2lEdW5nXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/OKR/ChiTiet.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT0tSXENoaVRpZXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/OKR/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT0tSXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/QuanLyDanhGiaCongViec/QuanLyDanhGiaCongViec/Views/PhongBan/Index.cshtml]

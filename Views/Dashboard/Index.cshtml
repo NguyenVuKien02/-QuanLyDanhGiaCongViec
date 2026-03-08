@@ -1,23 +1,22 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
+    string vaiTro = ViewBag.VaiTro ?? "Employee";
 }
 
-<div class="row mb-4">
-    <div class="col-12">
-        <h4 class="fw-bold">
-            <i class="fas fa-home me-2 text-primary"></i>
-            Xin chao, @ViewBag.HoTen 👋
-        </h4>
-        <p class="text-muted">
-            Vai tro: <span class="badge bg-primary">@ViewBag.VaiTro</span>
-            &nbsp;|&nbsp; @DateTime.Now.ToString("dddd, dd/MM/yyyy")
-        </p>
-    </div>
+<!-- Chao mung -->
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">
+        Xin chao, @ViewBag.HoTen 👋
+    </h4>
+    <p class="text-muted mb-0">
+        <span class="badge bg-primary">@vaiTro</span>
+        &nbsp;@DateTime.Now.ToString("dddd, dd/MM/yyyy")
+    </p>
 </div>
 
-<!-- The cards -->
-<div class="row g-4">
-    <div class="col-xl-3 col-md-6">
+<!-- The thong ke chinh -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-xl-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-primary bg-opacity-10 p-3">
@@ -25,48 +24,276 @@
                 </div>
                 <div>
                     <div class="text-muted small">Cong Viec Dang Lam</div>
-                    <div class="fs-4 fw-bold">0</div>
+                    <div class="fs-3 fw-bold text-primary">@ViewBag.CvDangLam</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-xl-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                    <i class="fas fa-chart-bar fa-2x text-success"></i>
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
                 </div>
                 <div>
-                    <div class="text-muted small">KPI Thang Nay</div>
-                    <div class="fs-4 fw-bold">0%</div>
+                    <div class="text-muted small">Hoan Thanh</div>
+                    <div class="fs-3 fw-bold text-success">@ViewBag.CvHoanThanh</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-xl-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                    <i class="fas fa-bullseye fa-2x text-warning"></i>
+                    <i class="fas fa-chart-bar fa-2x text-warning"></i>
                 </div>
                 <div>
-                    <div class="text-muted small">OKR Tien Do</div>
-                    <div class="fs-4 fw-bold">0%</div>
+                    <div class="text-muted small">KPI Trung Binh</div>
+                    <div class="fs-3 fw-bold text-warning">@ViewBag.KpiTrungBinh%</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-xl-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-danger bg-opacity-10 p-3">
-                    <i class="fas fa-bell fa-2x text-danger"></i>
+                    <i class="fas fa-exclamation-circle fa-2x text-danger"></i>
                 </div>
                 <div>
-                    <div class="text-muted small">Thong Bao Moi</div>
-                    <div class="fs-4 fw-bold">0</div>
+                    <div class="text-muted small">Qua Han</div>
+                    <div class="fs-3 fw-bold text-danger">@ViewBag.CvQuaHan</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row g-4 mb-4">
+    <!-- Cong viec sap den han -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0 pt-3">
+                <i class="fas fa-clock me-2 text-warning"></i>
+                Cong Viec Sap Den Han (7 Ngay)
+            </div>
+            <div class="card-body p-0">
+                @{
+                    var dsSapHan = ViewBag.DsCvSapHan as
+                    List<QuanLyDanhGiaCongViec.Models.CongViec>;
+                }
+                @if (dsSapHan != null && dsSapHan.Count > 0)
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var cv in dsSapHan)
+                        {
+                            int soNgay = cv.HanHoanThanh.HasValue
+                            ? cv.HanHoanThanh.Value
+                            .DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber
+                            : 99;
+                            string mau = soNgay <= 1 ? "danger"
+                            : soNgay <= 3 ? "warning" : "primary";
+                            <li class="list-group-item border-0 py-2">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="small fw-semibold">@cv.TenCongViec</div>
+                                        <div class="text-muted" style="font-size:12px">
+                                            @cv.NguoiDungThucHien?.HoTen
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-@mau align-self-center">
+                                        @(soNgay == 0 ? "Hom nay"
+                                            : soNgay == 1 ? "Ngay mai"
+                                            : $"Con {soNgay} ngay")
+                                    </span>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-2x mb-2 d-block text-success"></i>
+                        Khong co cong viec sap den han!
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- OKR tien do -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0 pt-3">
+                <i class="fas fa-bullseye me-2 text-primary"></i>
+                OKR Tien Do — @ViewBag.OkrTrungBinh%
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Tien Do Trung Binh OKR</span>
+                        <span class="fw-bold">@ViewBag.OkrTrungBinh%</span>
+                    </div>
+                    <div class="progress" style="height:12px;border-radius:6px">
+                        @{
+                            double okrPct = ViewBag.OkrTrungBinh ?? 0;
+                            string okrMau = okrPct >= 80 ? "success"
+                            : okrPct >= 50 ? "primary"
+                            : okrPct >= 30 ? "warning" : "danger";
+                        }
+                        <div class="progress-bar bg-@okrMau"
+                             style="width:@okrPct%;border-radius:6px"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>KPI Trung Binh</span>
+                        <span class="fw-bold">@ViewBag.KpiTrungBinh%</span>
+                    </div>
+                    <div class="progress" style="height:12px;border-radius:6px">
+                        @{
+                            double kpiPct = ViewBag.KpiTrungBinh ?? 0;
+                            string kpiMau = kpiPct >= 80 ? "success"
+                            : kpiPct >= 50 ? "primary"
+                            : kpiPct >= 30 ? "warning" : "danger";
+                        }
+                        <div class="progress-bar bg-@kpiMau"
+                             style="width:@kpiPct%;border-radius:6px"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/CongViec/Index" class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-tasks me-1"></i>Xem Cong Viec
+                    </a>
+                    <a href="/OKR/Index" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-bullseye me-1"></i>Xem OKR
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin/Manager: Bieu do & Top KPI -->
+@if (vaiTro == "Admin" || vaiTro == "Manager")
+{
+    <div class="row g-4 mb-4">
+        <!-- Bieu do cong viec -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-semibold border-0 pt-3">
+                    <i class="fas fa-chart-pie me-2 text-primary"></i>
+                    Trang Thai Cong Viec
+                </div>
+                <div class="card-body">
+                    <canvas id="bieuDoCongViec" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top KPI -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-semibold border-0 pt-3">
+                    <i class="fas fa-trophy me-2 text-warning"></i>
+                    Top 5 Nhan Vien KPI Cao Nhat
+                </div>
+                <div class="card-body">
+                    @{
+                        var topKpi = ViewBag.TopKPI as dynamic;
+                    }
+                    @if (topKpi != null)
+                    {
+                        int rank = 1;
+                        foreach (var item in topKpi)
+                        {
+                            string mauRank = rank == 1 ? "warning"
+                            : rank == 2 ? "secondary"
+                            : rank == 3 ? "danger" : "light";
+                            double diem = (double)item.DiemKPI;
+                            string mauBar = diem >= 80 ? "success"
+                            : diem >= 60 ? "primary"
+                            : diem >= 40 ? "warning" : "danger";
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="badge bg-@mauRank" style="width:28px">
+                                    @rank
+                                </span>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold">@item.HoTen</span>
+                                        <span class="text-@mauBar fw-bold">@diem%</span>
+                                    </div>
+                                    <div class="progress" style="height:6px">
+                                        <div class="progress-bar bg-@mauBar"
+                                             style="width:@diem%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            rank++;
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thong ke nhanh Admin -->
+    <div class="row g-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold text-primary">@ViewBag.TongNhanVien</div>
+                <div class="small text-muted">Tong Nhan Vien</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold text-success">@ViewBag.TongPhongBan</div>
+                <div class="small text-muted">Phong Ban</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold text-warning">@ViewBag.TongCongViec</div>
+                <div class="small text-muted">Tong Cong Viec</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold text-danger">@ViewBag.SoThongBao</div>
+                <div class="small text-muted">Thong Bao Chua Doc</div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (vaiTro == "Admin" || vaiTro == "Manager")
+        {
+            var bieu = ViewBag.BieuDoCv;
+            <text>
+                const ctx = document.getElementById('bieuDoCongViec').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Chua Bat Dau', 'Dang Lam', 'Hoan Thanh', 'Huy Bo'],
+                        datasets: [{
+                            data: [@bieu.ChuaBatDau, @bieu.DangLam, @bieu.HoanThanh, @bieu.HuyBo],
+                            backgroundColor: ['#6c757d','#0d6efd','#198754','#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            </text>
+        }
+    </script>
+}

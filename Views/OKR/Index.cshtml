@@ -1,0 +1,299 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly OKR";
+    var dsMucTieu = ViewBag.DsMucTieu as
+        List<QuanLyDanhGiaCongViec.Models.MucTieuOKR>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-bullseye me-2 text-primary"></i>Quan Ly OKR
+    </h5>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThem">
+        <i class="fas fa-plus me-1"></i>Tao Muc Tieu
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bo loc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Ky Danh Gia</label>
+                <select name="maKy" class="form-select">
+                    <option value="">-- Tat ca ky --</option>
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        if (ViewBag.MaKyFilter != null && ViewBag.MaKyFilter == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Nhan Vien</label>
+                    <select name="maNguoiDung" class="form-select">
+                        <option value="">-- Tat ca --</option>
+                        @foreach (var nd in ViewBag.DsNguoiDung)
+                        {
+                            if (ViewBag.MaNguoiDungFilter != null &&
+                            ViewBag.MaNguoiDungFilter == nd.MaNguoiDung)
+                            {
+                                <option value="@nd.MaNguoiDung" selected>@nd.HoTen</option>
+                            }
+                            else
+                            {
+                                <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Loc
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="/OKR/Index" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>Xoa Loc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Danh sach OKR dang the -->
+@if (dsMucTieu != null && dsMucTieu.Count > 0)
+{
+    <div class="row g-4">
+        @foreach (var mt in dsMucTieu)
+        {
+            var mauTrangThai = mt.TrangThai switch
+            {
+                "HoanThanh" => "success",
+                "RuiRo" => "danger",
+                _ => "primary"
+            };
+            var mauTienDo = mt.TienDo >= 100 ? "success"
+            : mt.TienDo >= 60 ? "primary"
+            : mt.TienDo >= 30 ? "warning"
+            : "danger";
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-@mauTrangThai">@mt.TrangThai</span>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-warning"
+                                        onclick="suaMucTieu(@mt.MaMucTieu)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="post" action="/OKR/XoaMucTieu" class="d-inline"
+                                      onsubmit="return confirm('Xoa muc tieu nay va tat ca Key Result?')">
+                                    <input type="hidden" name="id" value="@mt.MaMucTieu" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tieu de -->
+                        <h6 class="fw-bold mb-1">@mt.TieuDe</h6>
+                        <p class="text-muted small mb-3">@(mt.MoTa ?? "Khong co mo ta")</p>
+
+                        <!-- Thong tin -->
+                        <div class="small text-muted mb-3">
+                            <i class="fas fa-user me-1"></i>@mt.NguoiSoHuu?.HoTen
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-calendar me-1"></i>@(mt.KyDanhGia?.TenKy ?? "—")
+                        </div>
+
+                        <!-- Tien do tong the -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="fw-semibold">Tien Do Tong The</span>
+                                <span class="fw-bold text-@mauTienDo">@mt.TienDo%</span>
+                            </div>
+                            <div class="progress" style="height:10px;border-radius:5px">
+                                <div class="progress-bar bg-@mauTienDo"
+                                     style="width:@mt.TienDo%;border-radius:5px"></div>
+                            </div>
+                        </div>
+
+                        <!-- So Key Results -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">
+                                <i class="fas fa-key me-1"></i>
+                                @mt.KetQuaThenChots.Count Key Results
+                            </span>
+                            <a href="/OKR/ChiTiet/@mt.MaMucTieu"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>Chi Tiet
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="text-center py-5 text-muted">
+        <i class="fas fa-bullseye fa-3x mb-3 d-block"></i>
+        <h6>Chua co muc tieu OKR nao</h6>
+        <p class="small">Bam "Tao Muc Tieu" de bat dau!</p>
+    </div>
+}
+
+<!-- Modal Them Muc Tieu -->
+<div class="modal fade" id="modalThem" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Tao Muc Tieu OKR Moi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/OKR/ThemMucTieu">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tieu De Muc Tieu <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="tieuDe" class="form-control"
+                               placeholder="VD: Tang doanh thu 20% trong quy 1" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mo Ta</label>
+                        <textarea name="moTa" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ky Danh Gia</label>
+                        <select name="maKy" class="form-select">
+                            <option value="">-- Chon ky --</option>
+                            @foreach (var ky in ViewBag.DsKy)
+                            {
+                                <option value="@ky.MaKy">@ky.TenKy</option>
+                            }
+                        </select>
+                    </div>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Giao Cho</label>
+                            <select name="maNguoiSoHuu" class="form-select">
+                                <option value="">-- Mac dinh la ban --</option>
+                                @foreach (var nd in ViewBag.DsNguoiDung)
+                                {
+                                    <option value="@nd.MaNguoiDung">@nd.HoTen</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Tao Muc Tieu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sua Muc Tieu -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Chinh Sua Muc Tieu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/OKR/CapNhatMucTieu">
+                <div class="modal-body">
+                    <input type="hidden" name="maMucTieu" id="suaMaMT" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tieu De</label>
+                        <input type="text" name="tieuDe" id="suaTieuDe"
+                               class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mo Ta</label>
+                        <textarea name="moTa" id="suaMoTa" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ky Danh Gia</label>
+                        <select name="maKy" id="suaMaKy" class="form-select">
+                            <option value="">-- Chon ky --</option>
+                            @foreach (var ky in ViewBag.DsKy)
+                            {
+                                <option value="@ky.MaKy">@ky.TenKy</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Trang Thai</label>
+                        <select name="trangThai" id="suaTrangThai" class="form-select">
+                            <option value="DangTot">Dang Tot</option>
+                            <option value="RuiRo">Rui Ro</option>
+                            <option value="HoanThanh">Hoan Thanh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cap Nhat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function suaMucTieu(id) {
+            fetch('/OKR/GetMucTieuById?id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('suaMaMT').value      = data.maMucTieu;
+                    document.getElementById('suaTieuDe').value    = data.tieuDe;
+                    document.getElementById('suaMoTa').value      = data.moTa || '';
+                    document.getElementById('suaMaKy').value      = data.maKy || '';
+                    document.getElementById('suaTrangThai').value = data.trangThai;
+                    new bootstrap.Modal(document.getElementById('modalSua')).show();
+                });
+        }
+    </script>
+}
