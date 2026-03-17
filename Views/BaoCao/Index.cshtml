@@ -1,0 +1,244 @@
+﻿@{
+    ViewData["Title"] = "Bao Cao & Thong Ke";
+    var dsPhieu = ViewBag.DsPhieu as
+        List<QuanLyDanhGiaCongViec.Models.PhieuDanhGia>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-chart-line me-2 text-primary"></i>Bao Cao & Thong Ke
+    </h5>
+</div>
+
+<!-- Tong quan -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-2 fw-bold text-primary">@ViewBag.TongNhanVien</div>
+            <div class="small text-muted">Tong Nhan Vien</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-2 fw-bold text-warning">@ViewBag.TongCongViec</div>
+            <div class="small text-muted">Tong Cong Viec</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-2 fw-bold text-success">@ViewBag.CvHoanThanh</div>
+            <div class="small text-muted">Cong Viec Hoan Thanh</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fs-2 fw-bold text-info">@ViewBag.TiLeHT%</div>
+            <div class="small text-muted">Ti Le Hoan Thanh</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chon ky bao cao -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small">Chon Ky Danh Gia</label>
+                <select name="maKy" class="form-select">
+                    @foreach (var ky in ViewBag.DsKy)
+                    {
+                        if (ViewBag.MaKy != null && ViewBag.MaKy == ky.MaKy)
+                        {
+                            <option value="@ky.MaKy" selected>@ky.TenKy</option>
+                        }
+                        else
+                        {
+                            <option value="@ky.MaKy">@ky.TenKy</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Xem Bao Cao
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bao cao ky -->
+<div class="row g-4 mb-4">
+    <!-- Xep loai -->
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0 pt-3">
+                <i class="fas fa-trophy me-2 text-warning"></i>
+                Xep Loai — @ViewBag.TenKy
+            </div>
+            <div class="card-body">
+                <canvas id="bieuDoXepLoai" height="220"></canvas>
+                <div class="row text-center mt-3 g-2">
+                    <div class="col-3">
+                        <div class="fw-bold text-success fs-4">@ViewBag.SoXuatSac</div>
+                        <div class="small text-muted">Xuat Sac</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-primary fs-4">@ViewBag.SoTot</div>
+                        <div class="small text-muted">Tot</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-warning fs-4">@ViewBag.SoTrungBinh</div>
+                        <div class="small text-muted">Trung Binh</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="fw-bold text-danger fs-4">@ViewBag.SoYeu</div>
+                        <div class="small text-muted">Yeu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thong ke phong ban -->
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0 pt-3">
+                <i class="fas fa-building me-2 text-primary"></i>
+                Thong Ke Theo Phong Ban
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Phong Ban</th>
+                            <th>So NV</th>
+                            <th>CV Hoan Thanh</th>
+                            <th>Diem TB</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pb in ViewBag.ThongKePhongBan)
+                        {
+                            <tr>
+                                <td class="ps-3 fw-semibold">@pb.TenPhongBan</td>
+                                <td>@pb.SoNV</td>
+                                <td>@pb.SoCvHT</td>
+                                <td>
+                                    @if (pb.DiemTB > 0)
+                                    {
+                                        string mau = pb.DiemTB >= 80 ? "success"
+                                        : pb.DiemTB >= 60 ? "primary"
+                                        : "warning";
+                                        <span class="badge bg-@mau">@pb.DiemTB%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bang chi tiet danh gia -->
+@if (dsPhieu != null && dsPhieu.Count > 0)
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white fw-semibold border-0 pt-3">
+            <i class="fas fa-list me-2 text-primary"></i>
+            Chi Tiet Ket Qua Danh Gia — @ViewBag.TenKy
+            <span class="badge bg-primary ms-2">@ViewBag.DiemTBKy% TB</span>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">#</th>
+                        <th>Nhan Vien</th>
+                        <th>Phong Ban</th>
+                        <th>Diem KPI</th>
+                        <th>Diem OKR</th>
+                        <th>Diem NL</th>
+                        <th>Tong Hop</th>
+                        <th>Xep Loai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int stt = 1;
+                        foreach (var p in dsPhieu.OrderByDescending(x => x.DiemTongHop))
+                        {
+                            string mauXL = p.XepLoai switch
+                            {
+                                "XuatSac" => "success",
+                                "Tot" => "primary",
+                                "TrungBinh" => "warning",
+                                "Yeu" => "danger",
+                                _ => "secondary"
+                            };
+                            <tr>
+                                <td class="ps-3">@stt</td>
+                                <td class="fw-semibold">
+                                    @p.NguoiDuocDanhGia?.HoTen
+                                </td>
+                                <td class="text-muted small">
+                                    @p.NguoiDuocDanhGia?.PhongBan?.TenPhongBan
+                                </td>
+                                <td>@p.DiemKPI%</td>
+                                <td>@p.DiemOKR%</td>
+                                <td>@p.DiemNangLuc/10</td>
+                                <td class="fw-bold">@p.DiemTongHop%</td>
+                                <td>
+                                    <span class="badge bg-@mauXL">@p.XepLoai</span>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-4">
+            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+            Chua co du lieu danh gia duoc duyet trong ky nay
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('bieuDoXepLoai').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Xuat Sac', 'Tot', 'Trung Binh', 'Yeu'],
+                datasets: [{
+                    data: [
+        @ViewBag.SoXuatSac,
+        @ViewBag.SoTot,
+        @ViewBag.SoTrungBinh,
+        @ViewBag.SoYeu
+                    ],
+                    backgroundColor: ['#198754','#0d6efd','#ffc107','#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    </script>
+}

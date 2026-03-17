@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Thong Bao";
+    var ds = ViewBag.DsThongBao as
+        List<QuanLyDanhGiaCongViec.Models.ThongBao>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-bell me-2 text-primary"></i>Thong Bao
+    </h5>
+    @if (ds != null && ds.Count > 0)
+    {
+        <form method="post" action="/ThongBao/XoaTatCa"
+              onsubmit="return confirm('Xoa tat ca thong bao?')">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-trash me-1"></i>Xoa Tat Ca
+            </button>
+        </form>
+    }
+</div>
+
+@if (ds != null && ds.Count > 0)
+{
+    <div class="card border-0 shadow-sm">
+        <div class="list-group list-group-flush">
+            @foreach (var tb in ds)
+            {
+                string icon = tb.LoaiThongBao switch
+                {
+                    "GiaoCongViec" => "fas fa-tasks text-primary",
+                    "DenHanDanhGia" => "fas fa-star text-warning",
+                    "CapNhatKPI" => "fas fa-chart-bar text-success",
+                    _ => "fas fa-bell text-secondary"
+                };
+                <div class="list-group-item border-0 py-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="rounded-circle bg-light p-2 mt-1">
+                            <i class="@icon"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@tb.TieuDe</div>
+                            <div class="text-muted small">@tb.NoiDung</div>
+                            <div class="text-muted" style="font-size:11px">
+                                <i class="fas fa-clock me-1"></i>
+                                @tb.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                        <form method="post" action="/ThongBao/Xoa">
+                            <input type="hidden" name="id" value="@tb.MaThongBao" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5 text-muted">
+        <i class="fas fa-bell-slash fa-3x mb-3 d-block"></i>
+        <h6>Khong co thong bao nao</h6>
+    </div>
+}

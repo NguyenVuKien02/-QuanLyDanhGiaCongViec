@@ -1,0 +1,232 @@
+﻿@{
+    ViewData["Title"] = "Quan Ly Ky Danh Gia";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-calendar me-2 text-primary"></i>Quan Ly Ky Danh Gia
+    </h5>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThem">
+        <i class="fas fa-plus me-1"></i>Them Ky Moi
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Ten Ky</th>
+                    <th>Loai Ky</th>
+                    <th>Ngay Bat Dau</th>
+                    <th>Ngay Ket Thuc</th>
+                    <th>Trang Thai</th>
+                    <th class="text-center">Thao Tac</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int stt = 1;
+                    foreach (var ky in ViewBag.DsKy)
+                    {
+                        string mauTT = ky.TrangThai == "DangMo" ? "success" : "secondary";
+                        <tr>
+                            <td class="ps-3">@stt</td>
+                            <td class="fw-semibold">@ky.TenKy</td>
+                            <td>
+                                @if (ky.LoaiKy == "TheoThang")
+                                {
+                                    <span class="badge bg-info text-dark">Theo Thang</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">Theo Nam</span>
+                                }
+                            </td>
+                            <td>@ky.NgayBatDau.ToString("dd/MM/yyyy")</td>
+                            <td>@ky.NgayKetThuc.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge bg-@mauTT">@ky.TrangThai</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-warning"
+                                        onclick="suaKy(@ky.MaKy)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="post" action="/KyDanhGia/DoiTrangThai"
+                                      class="d-inline">
+                                    <input type="hidden" name="id" value="@ky.MaKy" />
+                                    <button type="submit"
+                                            class="btn btn-sm @(ky.TrangThai == "DangMo" ? "btn-outline-secondary" : "btn-outline-success")"
+                                            title="@(ky.TrangThai == "DangMo" ? "Dong ky" : "Mo lai ky")">
+                                        <i class="fas @(ky.TrangThai == "DangMo" ? "fa-lock" : "fa-lock-open")"></i>
+                                    </button>
+                                </form>
+                                <form method="post" action="/KyDanhGia/Xoa"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Xoa ky nay?')">
+                                    <input type="hidden" name="id" value="@ky.MaKy" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Them -->
+<div class="modal fade" id="modalThem" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Them Ky Danh Gia Moi
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/KyDanhGia/Them">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Ten Ky <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="tenKy" class="form-control"
+                               placeholder="VD: Thang 01/2025" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Loai Ky</label>
+                        <select name="loaiKy" class="form-select">
+                            <option value="TheoThang">Theo Thang</option>
+                            <option value="TheoNam">Theo Nam</option>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Ngay Bat Dau <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="ngayBatDau"
+                                   class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Ngay Ket Thuc <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="ngayKetThuc"
+                                   class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Huy
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Luu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sua -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Chinh Sua Ky Danh Gia
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/KyDanhGia/CapNhat">
+                <div class="modal-body">
+                    <input type="hidden" name="maKy" id="suaMaKy" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ten Ky</label>
+                        <input type="text" name="tenKy" id="suaTenKy"
+                               class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Loai Ky</label>
+                        <select name="loaiKy" id="suaLoaiKy" class="form-select">
+                            <option value="TheoThang">Theo Thang</option>
+                            <option value="TheoNam">Theo Nam</option>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngay Bat Dau</label>
+                            <input type="date" name="ngayBatDau" id="suaNgayBD"
+                                   class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngay Ket Thuc</label>
+                            <input type="date" name="ngayKetThuc" id="suaNgayKT"
+                                   class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label fw-semibold">Trang Thai</label>
+                        <select name="trangThai" id="suaTrangThai" class="form-select">
+                            <option value="DangMo">Dang Mo</option>
+                            <option value="DaDong">Da Dong</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Huy
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cap Nhat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function suaKy(id) {
+            fetch('/KyDanhGia/GetById?id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('suaMaKy').value      = data.maKy;
+                    document.getElementById('suaTenKy').value     = data.tenKy;
+                    document.getElementById('suaLoaiKy').value    = data.loaiKy;
+                    document.getElementById('suaNgayBD').value    = data.ngayBatDau;
+                    document.getElementById('suaNgayKT').value    = data.ngayKetThuc;
+                    document.getElementById('suaTrangThai').value = data.trangThai;
+                    new bootstrap.Modal(document.getElementById('modalSua')).show();
+                });
+        }
+    </script>
+}

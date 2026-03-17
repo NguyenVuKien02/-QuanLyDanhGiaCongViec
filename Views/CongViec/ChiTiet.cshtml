@@ -1,0 +1,328 @@
+﻿@model QuanLyDanhGiaCongViec.Models.CongViec
+@{
+    ViewData["Title"] = "Chi Tiết Công Việc";
+    bool quaHan = Model.HanHoanThanh.HasValue
+               && Model.HanHoanThanh.Value < DateOnly.FromDateTime(DateTime.Now)
+               && Model.TrangThai != "HoanThanh";
+
+    string mauTrangThai = Model.TrangThai switch
+    {
+        "HoanThanh" => "success",
+        "DangLam" => "primary",
+        "HuyBo" => "danger",
+        _ => "secondary"
+    };
+    string tenTrangThai = Model.TrangThai switch
+    {
+        "HoanThanh" => "Hoàn Thành",
+        "DangLam" => "Đang Làm",
+        "HuyBo" => "Huỷ Bỏ",
+        _ => "Chưa Bắt Đầu"
+    };
+    string mauUuTien = Model.UuTien switch
+    {
+        "KhanCap" => "danger",
+        "Cao" => "warning",
+        "TrungBinh" => "primary",
+        _ => "secondary"
+    };
+    string tenUuTien = Model.UuTien switch
+    {
+        "KhanCap" => "Khẩn Cấp",
+        "Cao" => "Cao",
+        "TrungBinh" => "Trung Bình",
+        _ => "Thấp"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">
+        <i class="fas fa-tasks me-2 text-primary"></i>Chi Tiết Công Việc
+    </h5>
+    <a href="/CongViec/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Quay Lại
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Thông tin chính -->
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold mb-0">@Model.TenCongViec</h5>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-@mauUuTien">@tenUuTien</span>
+                        <span class="badge bg-@mauTrangThai">@tenTrangThai</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <p class="text-muted mb-4">@Model.MoTa</p>
+                }
+
+                <!-- Tiến độ -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-semibold">Tiến Độ</span>
+                        <span class="fw-bold text-primary fs-5">@Model.TienDo%</span>
+                    </div>
+                    <div class="progress" style="height:14px;border-radius:7px">
+                        <div class="progress-bar bg-@(Model.TienDo == 100 ? "success" : "primary")"
+                             style="width:@Model.TienDo%;border-radius:7px">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ghi chú -->
+                @if (!string.IsNullOrEmpty(Model.GhiChu))
+                {
+                    <div class="border rounded p-3 bg-light">
+                        <div class="fw-semibold small text-muted mb-1">
+                            <i class="fas fa-sticky-note me-1"></i>Ghi Chú
+                        </div>
+                        <p class="mb-0 small">@Model.GhiChu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin phụ -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3 text-muted">
+                    <i class="fas fa-info-circle me-2"></i>Thông Tin
+                </h6>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Người Thực Hiện</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary text-white d-flex
+                                    align-items-center justify-content-center fw-bold"
+                             style="width:32px;height:32px;font-size:13px;flex-shrink:0">
+                            @(Model.NguoiDungThucHien?.HoTen.Substring(0, 1).ToUpper() ?? "?")
+                        </div>
+                        <span class="fw-semibold">
+                            @(Model.NguoiDungThucHien?.HoTen ?? "Chưa phân công")
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Người Giao</div>
+                    <div class="fw-semibold">
+                        @(Model.NguoiDungGiao?.HoTen ?? "—")
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Kỳ Đánh Giá</div>
+                    <div class="fw-semibold">
+                        @(Model.KyDanhGia?.TenKy ?? "—")
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Ngày Bắt Đầu</div>
+                    <div class="fw-semibold">
+                        @(Model.NgayBatDau?.ToString("dd/MM/yyyy") ?? "—")
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Hạn Hoàn Thành</div>
+                    @if (Model.HanHoanThanh.HasValue)
+                    {
+                        <div class="fw-semibold">
+                            @Model.HanHoanThanh.Value.ToString("dd/MM/yyyy")
+                        </div>
+                        @if (Model.TrangThai == "HoanThanh" && Model.NgayHoanThanh.HasValue)
+                        {
+                            int soNgayTreHan = Model.NgayHoanThanh.Value.DayNumber
+                            - Model.HanHoanThanh.Value.DayNumber;
+                            @if (soNgayTreHan > 0)
+                            {
+                                <div class="badge bg-danger mt-1">
+                                    Hoàn thành trễ @soNgayTreHan ngày
+                                </div>
+                            }
+                            else if (soNgayTreHan == 0)
+                            {
+                                <div class="badge bg-success mt-1">Hoàn thành đúng hạn</div>
+                            }
+                            else
+                            {
+                                <div class="badge bg-success mt-1">
+                                    Hoàn thành trước @(Math.Abs(soNgayTreHan)) ngày
+                                </div>
+                            }
+                        }
+                        else if (Model.TrangThai != "HoanThanh")
+                        {
+                            int soNgay = Model.HanHoanThanh.Value.DayNumber
+                            - DateOnly.FromDateTime(DateTime.Now).DayNumber;
+                            @if (soNgay < 0)
+                            {
+                                <div class="badge bg-danger mt-1">
+                                    Quá hạn @(Math.Abs(soNgay)) ngày
+                                </div>
+                            }
+                            else if (soNgay == 0)
+                            {
+                                <div class="badge bg-warning text-dark mt-1">Hết hạn hôm nay</div>
+                            }
+                            else if (soNgay <= 3)
+                            {
+                                <div class="badge bg-warning text-dark mt-1">Còn @soNgay ngày</div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="fw-semibold">—</div>
+                    }
+                </div>
+
+                @if (Model.NgayHoanThanh.HasValue)
+                {
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Ngày Hoàn Thành</div>
+                        <div class="fw-semibold text-success">
+                            @Model.NgayHoanThanh.Value.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Ngày Tạo</div>
+                    <div class="fw-semibold">
+                        @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+
+                <hr />
+
+                <button class="btn btn-primary w-100"
+                        onclick="suaCongViec(@Model.MaCongViec)"
+                        data-bs-toggle="modal" data-bs-target="#modalSua">
+                    <i class="fas fa-edit me-1"></i>Chỉnh Sửa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa nhúng vào trang chi tiết -->
+<div class="modal fade" id="modalSua" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Cập Nhật Công Việc
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/CongViec/CapNhat">
+                <div class="modal-body">
+                    <input type="hidden" name="maCongViec" id="suaMaCv" value="@Model.MaCongViec" />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Tên Công Việc</label>
+                            <input type="text" name="tenCongViec" id="suaTenCv"
+                                   class="form-control" value="@Model.TenCongViec" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô Tả</label>
+                            <textarea name="moTa" class="form-control" rows="2">@Model.MoTa</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Trạng Thái</label>
+                            <select name="trangThai" class="form-select">
+                                @foreach (var tt in new[] {
+                                new { Val = "ChuaBatDau", Ten = "Chưa Bắt Đầu" },
+                                new { Val = "DangLam",    Ten = "Đang Làm" },
+                                new { Val = "HoanThanh",  Ten = "Hoàn Thành" },
+                                new { Val = "HuyBo",      Ten = "Huỷ Bỏ" }
+                                })
+                                {
+                                    if (Model.TrangThai == tt.Val)
+                                    {
+                                        <option value="@tt.Val" selected>@tt.Ten</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@tt.Val">@tt.Ten</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ưu Tiên</label>
+                            <select name="uuTien" class="form-select">
+                                @foreach (var ut in new[] {
+                                new { Val = "Thap",      Ten = "Thấp" },
+                                new { Val = "TrungBinh", Ten = "Trung Bình" },
+                                new { Val = "Cao",       Ten = "Cao" },
+                                new { Val = "KhanCap",   Ten = "Khẩn Cấp" }
+                                })
+                                {
+                                    if (Model.UuTien == ut.Val)
+                                    {
+                                        <option value="@ut.Val" selected>@ut.Ten</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@ut.Val">@ut.Ten</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày Bắt Đầu</label>
+                            <input type="date" name="ngayBatDau" id="ctNgayBD"
+                                   class="form-control"
+                                   value="@Model.NgayBatDau?.ToString("yyyy-MM-dd")"
+                                   onchange="capNhatNgayMinKetThuc('ctNgayBD','ctHanHT')" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hạn Hoàn Thành</label>
+                            <input type="date" name="hanHoanThanh" id="ctHanHT"
+                                   class="form-control"
+                                   value="@Model.HanHoanThanh?.ToString("yyyy-MM-dd")"
+                                   min="@Model.NgayBatDau?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ghi Chú</label>
+                            <textarea name="ghiChu" class="form-control" rows="2">@Model.GhiChu</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cập Nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatNgayMinKetThuc(idBatDau, idKetThuc) {
+            const ngayBD  = document.getElementById(idBatDau).value;
+            const inputKT = document.getElementById(idKetThuc);
+            if (ngayBD) {
+                inputKT.min = ngayBD;
+                if (inputKT.value && inputKT.value < ngayBD)
+                    inputKT.value = ngayBD;
+            }
+        }
+    </script>
+}

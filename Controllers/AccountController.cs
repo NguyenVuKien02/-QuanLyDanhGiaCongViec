@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuanLyDanhGiaCongViec.Data;
 using QuanLyDanhGiaCongViec.Models;
@@ -105,6 +106,63 @@ namespace QuanLyDanhGiaCongViec.Controllers
             byte[] inputBytes = Encoding.ASCII.GetBytes(input);
             byte[] hashBytes = md5.ComputeHash(inputBytes);
             return Convert.ToHexString(hashBytes).ToLower();
+        }
+
+        // GET - Hien thi form doi mat khau
+        [HttpGet]
+        [Authorize]
+        public IActionResult DoiMatKhau()
+        {
+            return View();
+        }
+
+        // POST - Xu ly doi mat khau
+        [HttpPost]
+        [Authorize]
+        public IActionResult DoiMatKhau(string matKhauCu, string matKhauMoi, string xacNhanMatKhau)
+        {
+            int maNguoiDung = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (string.IsNullOrEmpty(matKhauCu) ||
+                string.IsNullOrEmpty(matKhauMoi) ||
+                string.IsNullOrEmpty(xacNhanMatKhau))
+            {
+                ViewBag.Error = "Vui long nhap day du thong tin!";
+                return View();
+            }
+
+            if (matKhauMoi != xacNhanMatKhau)
+            {
+                ViewBag.Error = "Mat khau moi va xac nhan khong khop!";
+                return View();
+            }
+
+            if (matKhauMoi.Length < 6)
+            {
+                ViewBag.Error = "Mat khau moi phai co it nhat 6 ky tu!";
+                return View();
+            }
+
+            var nguoiDung = _context.NguoiDungs.Find(maNguoiDung);
+            if (nguoiDung == null)
+            {
+                ViewBag.Error = "Khong tim thay tai khoan!";
+                return View();
+            }
+
+            // Kiem tra mat khau cu
+            if (nguoiDung.MatKhauHash != HashMD5(matKhauCu))
+            {
+                ViewBag.Error = "Mat khau cu khong dung!";
+                return View();
+            }
+
+            // Cap nhat mat khau moi
+            nguoiDung.MatKhauHash = HashMD5(matKhauMoi);
+            _context.SaveChanges();
+
+            ViewBag.Success = "Doi mat khau thanh cong! Vui long dang nhap lai.";
+            return View();
         }
     }
 }

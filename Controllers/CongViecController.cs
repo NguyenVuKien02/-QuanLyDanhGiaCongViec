@@ -11,14 +11,17 @@ namespace QuanLyDanhGiaCongViec.Controllers
     public class CongViecController : Controller
     {
         private readonly AppDbContext _context;
+        private const int TRANG_KICh_THUOC = 4;
 
         public CongViecController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Danh sach cong viec
-        public IActionResult Index(string? trangThai, int? maKy, string? tuKhoa)
+        public IActionResult Index(string? trangThai, int? thang, int? nam,
+                                   string? tuKhoa, int trangChuaBatDau = 1,
+                                   int trangDangLam = 1, int trangHoanThanh = 1,
+                                   int trangHuyBo = 1)
         {
             int maNguoiDung = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             string vaiTro = User.FindFirst(ClaimTypes.Role)!.Value;
@@ -29,44 +32,97 @@ namespace QuanLyDanhGiaCongViec.Controllers
                 .Include(c => c.KyDanhGia)
                 .AsQueryable();
 
-            // Nhan vien chi xem cong viec cua minh
             if (vaiTro == "Employee")
                 query = query.Where(c => c.NguoiThucHien == maNguoiDung);
-
-            // Manager xem cong viec minh giao hoac cua nhom
             if (vaiTro == "Manager")
                 query = query.Where(c => c.NguoiGiao == maNguoiDung
                                       || c.NguoiThucHien == maNguoiDung);
 
+            // Tim kiem theo ten cong viec VA ten nguoi thuc hien
+            if (!string.IsNullOrEmpty(tuKhoa))
+                query = query.Where(c =>
+                    c.TenCongViec.Contains(tuKhoa) ||
+                    (c.NguoiDungThucHien != null &&
+                     c.NguoiDungThucHien.HoTen.Contains(tuKhoa)));
+
+            // Loc theo thang
+            if (thang.HasValue && thang > 0)
+            {
+                int namLoc = nam ?? DateTime.Now.Year;
+                query = query.Where(c =>
+                    c.NgayBatDau.HasValue &&
+                    c.NgayBatDau.Value.Month == thang &&
+                    c.NgayBatDau.Value.Year == namLoc);
+            }
+
+            // Loc theo hoan thanh hay chua
             if (!string.IsNullOrEmpty(trangThai))
                 query = query.Where(c => c.TrangThai == trangThai);
 
-            if (maKy.HasValue)
-                query = query.Where(c => c.MaKy == maKy);
+            var dsTatCa = query.OrderByDescending(c => c.NgayTao).ToList();
 
-            if (!string.IsNullOrEmpty(tuKhoa))
-                query = query.Where(c => c.TenCongViec.Contains(tuKhoa));
+            // Phan trang tung cot
+            var chuaBatDauList = dsTatCa.Where(c => c.TrangThai == "ChuaBatDau").ToList();
+            var dangLamList = dsTatCa.Where(c => c.TrangThai == "DangLam").ToList();
+            var hoanThanhList = dsTatCa.Where(c => c.TrangThai == "HoanThanh").ToList();
+            var huyBoList = dsTatCa.Where(c => c.TrangThai == "HuyBo").ToList();
 
-            var dsCongViec = query.OrderByDescending(c => c.NgayTao).ToList();
+            ViewBag.ChuaBatDauList = chuaBatDauList
+                .Skip((trangChuaBatDau - 1) * TRANG_KICh_THUOC)
+                .Take(TRANG_KICh_THUOC).ToList();
+            ViewBag.DangLamList = dangLamList
+                .Skip((trangDangLam - 1) * TRANG_KICh_THUOC)
+                .Take(TRANG_KICh_THUOC).ToList();
+            ViewBag.HoanThanhList = hoanThanhList
+                .Skip((trangHoanThanh - 1) * TRANG_KICh_THUOC)
+                .Take(TRANG_KICh_THUOC).ToList();
+            ViewBag.HuyBoList = huyBoList
+                .Skip((trangHuyBo - 1) * TRANG_KICh_THUOC)
+                .Take(TRANG_KICh_THUOC).ToList();
 
-            ViewBag.DsCongViec = dsCongViec;
-            ViewBag.ChuaBatDau = dsCongViec.Count(c => c.TrangThai == "ChuaBatDau");
-            ViewBag.DangLam = dsCongViec.Count(c => c.TrangThai == "DangLam");
-            ViewBag.HoanThanh = dsCongViec.Count(c => c.TrangThai == "HoanThanh");
-            ViewBag.HuyBo = dsCongViec.Count(c => c.TrangThai == "HuyBo");
+            // So trang tung cot
+            ViewBag.TongTrangCBD = (int)Math.Ceiling(chuaBatDauList.Count / (double)TRANG_KICh_THUOC);
+            ViewBag.TongTrangDL = (int)Math.Ceiling(dangLamList.Count / (double)TRANG_KICh_THUOC);
+            ViewBag.TongTrangHT = (int)Math.Ceiling(hoanThanhList.Count / (double)TRANG_KICh_THUOC);
+            ViewBag.TongTrangHB = (int)Math.Ceiling(huyBoList.Count / (double)TRANG_KICh_THUOC);
+
+            ViewBag.TrangCBD = trangChuaBatDau;
+            ViewBag.TrangDL = trangDangLam;
+            ViewBag.TrangHT = trangHoanThanh;
+            ViewBag.TrangHB = trangHuyBo;
+
+            // Thong ke
+            ViewBag.ChuaBatDau = chuaBatDauList.Count;
+            ViewBag.DangLam = dangLamList.Count;
+            ViewBag.HoanThanh = hoanThanhList.Count;
+            ViewBag.HuyBo = huyBoList.Count;
+
+            ViewBag.DsNguoiDung = _context.NguoiDungs.Where(n => n.TrangThai == true).ToList();
             ViewBag.DsKy = _context.KyDanhGias.ToList();
-            ViewBag.DsNguoiDung = _context.NguoiDungs
-                                        .Where(n => n.TrangThai == true).ToList();
             ViewBag.TrangThaiFilter = trangThai;
-            ViewBag.MaKyFilter = maKy;
+            ViewBag.ThangFilter = thang;
+            ViewBag.NamFilter = nam ?? DateTime.Now.Year;
             ViewBag.TuKhoa = tuKhoa;
             ViewBag.VaiTro = vaiTro;
             ViewBag.MaNguoiDung = maNguoiDung;
+            ViewBag.NamHienTai = DateTime.Now.Year;
 
             return View();
         }
 
-        // Them cong viec
+        // Chi tiet cong viec
+        public IActionResult ChiTiet(int id)
+        {
+            var cv = _context.CongViecs
+                .Include(c => c.NguoiDungThucHien)
+                .Include(c => c.NguoiDungGiao)
+                .Include(c => c.KyDanhGia)
+                .FirstOrDefault(c => c.MaCongViec == id);
+
+            if (cv == null) return NotFound();
+            return View(cv);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Admin,Manager")]
         public IActionResult Them(string tenCongViec, string? moTa, int nguoiThucHien,
@@ -93,24 +149,21 @@ namespace QuanLyDanhGiaCongViec.Controllers
             _context.CongViecs.Add(cv);
             _context.SaveChanges();
 
-            // Tao thong bao cho nguoi thuc hien
-            var tb = new ThongBao
+            _context.ThongBaos.Add(new ThongBao
             {
                 MaNguoiDung = nguoiThucHien,
-                TieuDe = "Ban co cong viec moi!",
-                NoiDung = $"Ban duoc giao cong viec: {tenCongViec}",
+                TieuDe = "Bạn có công việc mới!",
+                NoiDung = $"Bạn được giao công việc: {tenCongViec}",
                 LoaiThongBao = "GiaoCongViec",
                 DaDoc = false,
                 NgayTao = DateTime.Now
-            };
-            _context.ThongBaos.Add(tb);
+            });
             _context.SaveChanges();
 
-            TempData["Success"] = "Them cong viec thanh cong!";
+            TempData["Success"] = "Thêm công việc thành công!";
             return RedirectToAction("Index");
         }
 
-        // Lay thong tin de sua
         [HttpGet]
         public IActionResult GetById(int id)
         {
@@ -131,7 +184,6 @@ namespace QuanLyDanhGiaCongViec.Controllers
             });
         }
 
-        // Cap nhat cong viec
         [HttpPost]
         public IActionResult CapNhat(int maCongViec, string tenCongViec, string? moTa,
                                      int? nguoiThucHien, int? maKy, string uuTien,
@@ -141,7 +193,7 @@ namespace QuanLyDanhGiaCongViec.Controllers
             var cv = _context.CongViecs.Find(maCongViec);
             if (cv == null)
             {
-                TempData["Error"] = "Khong tim thay cong viec!";
+                TempData["Error"] = "Không tìm thấy công việc!";
                 return RedirectToAction("Index");
             }
 
@@ -160,11 +212,10 @@ namespace QuanLyDanhGiaCongViec.Controllers
 
             _context.SaveChanges();
 
-            TempData["Success"] = "Cap nhat cong viec thanh cong!";
+            TempData["Success"] = "Cập nhật công việc thành công!";
             return RedirectToAction("Index");
         }
 
-        // Cap nhat tien do nhanh
         [HttpPost]
         public IActionResult CapNhatTienDo(int id, int tienDo)
         {
@@ -178,15 +229,12 @@ namespace QuanLyDanhGiaCongViec.Controllers
                 cv.NgayHoanThanh = DateOnly.FromDateTime(DateTime.Now);
             }
             else if (tienDo > 0)
-            {
                 cv.TrangThai = "DangLam";
-            }
 
             _context.SaveChanges();
             return Json(new { success = true });
         }
 
-        // Xoa cong viec
         [HttpPost]
         [Authorize(Roles = "Admin,Manager")]
         public IActionResult Xoa(int id)
@@ -194,14 +242,14 @@ namespace QuanLyDanhGiaCongViec.Controllers
             var cv = _context.CongViecs.Find(id);
             if (cv == null)
             {
-                TempData["Error"] = "Khong tim thay cong viec!";
+                TempData["Error"] = "Không tìm thấy công việc!";
                 return RedirectToAction("Index");
             }
 
             _context.CongViecs.Remove(cv);
             _context.SaveChanges();
 
-            TempData["Success"] = "Xoa cong viec thanh cong!";
+            TempData["Success"] = "Xóa công việc thành công!";
             return RedirectToAction("Index");
         }
     }
